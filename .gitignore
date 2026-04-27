@@ -36,9 +36,16 @@ build/
 ### VS Code ###
 .vscode/
 scripts/logs/
+*.dev.log
+*.dev.err.log
+hs_err_pid*.log
+replay_pid*.log
+frontend/vite-dev.log
+frontend/vite-dev.err.log
 
 ### Frontend ###
 node_modules/
 dist/
 .vite/
+.env
 .env.local

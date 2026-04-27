@@ -39,8 +39,17 @@ public final class OpenAIStyleSseParser {
         }
 
         String payload = line.trim();
+        if (payload.startsWith(":")) {
+            return ParsedEvent.heartbeatEvent();
+        }
+        if (payload.startsWith("event:")) {
+            return ParsedEvent.empty();
+        }
         if (payload.startsWith(DATA_PREFIX)) {
             payload = payload.substring(DATA_PREFIX.length()).trim();
+        }
+        if (!payload.startsWith("{") && !DONE_MARKER.equalsIgnoreCase(payload)) {
+            return ParsedEvent.empty();
         }
         if (DONE_MARKER.equalsIgnoreCase(payload)) {
             return ParsedEvent.done();
@@ -57,7 +66,7 @@ public final class OpenAIStyleSseParser {
         String reasoning = reasoningEnabled ? extractText(choice0, "reasoning_content") : null;
         boolean completed = hasFinishReason(choice0);
 
-        return new ParsedEvent(content, reasoning, completed);
+        return new ParsedEvent(content, reasoning, completed, false);
     }
 
     private static boolean hasFinishReason(JsonObject choice) {
@@ -93,14 +102,18 @@ public final class OpenAIStyleSseParser {
         return null;
     }
 
-    record ParsedEvent(String content, String reasoning, boolean completed) {
+    record ParsedEvent(String content, String reasoning, boolean completed, boolean heartbeat) {
 
         static ParsedEvent empty() {
-            return new ParsedEvent(null, null, false);
+            return new ParsedEvent(null, null, false, false);
         }
 
         static ParsedEvent done() {
-            return new ParsedEvent(null, null, true);
+            return new ParsedEvent(null, null, true, false);
+        }
+
+        static ParsedEvent heartbeatEvent() {
+            return new ParsedEvent(null, null, false, true);
         }
 
         boolean hasContent() {

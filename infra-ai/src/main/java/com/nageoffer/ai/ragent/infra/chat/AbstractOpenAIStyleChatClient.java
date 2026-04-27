@@ -174,6 +174,10 @@ public abstract class AbstractOpenAIStyleChatClient implements ChatClient {
                 }
                 try {
                     OpenAIStyleSseParser.ParsedEvent event = OpenAIStyleSseParser.parseLine(line, gson, reasoningEnabled);
+                    if (event.heartbeat()) {
+                        callback.onThinking("");
+                        continue;
+                    }
                     if (event.hasReasoning()) {
                         callback.onThinking(event.reasoning());
                     }

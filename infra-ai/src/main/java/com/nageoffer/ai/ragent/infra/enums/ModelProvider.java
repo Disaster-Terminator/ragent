@@ -44,6 +44,16 @@ public enum ModelProvider {
     SILICON_FLOW("siliconflow"),
 
     /**
+     * OpenRouter OpenAI-compatible model routing service
+     */
+    OPENROUTER("openrouter"),
+
+    /**
+     * LM Studio local OpenAI-compatible model server
+     */
+    LMSTUDIO("lmstudio"),
+
+    /**
      * 空实现，用于测试或占位
      */
     NOOP("noop");

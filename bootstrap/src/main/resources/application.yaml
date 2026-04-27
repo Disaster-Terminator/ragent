@@ -4,6 +4,9 @@ server:
     context-path: /api/ragent
 
 spring:
+  config:
+    import: optional:file:.env[.properties]
+
   application:
     name: ragent${unique-name:}-service
 
@@ -47,12 +50,12 @@ rag:
 
   default:
     collection-name: rag_default_store
-    dimension: 1536
+    dimension: 1024
     metric-type: COSINE
     sse-timeout-ms: 300000  # SSE 全局超时（毫秒），默认 5 分钟
 
   query-rewrite:
-    enabled: true
+    enabled: ${RAG_QUERY_REWRITE_ENABLED:false}
 
   rate-limit:
     global:
@@ -120,6 +123,15 @@ ai:
       endpoints:
         chat: /v1/chat/completions
         embedding: /v1/embeddings
+    openrouter:
+      url: https://openrouter.ai
+      api-key: ${OPENROUTER_API_KEY:}
+      endpoints:
+        chat: /api/v1/chat/completions
+    lmstudio:
+      url: ${LMSTUDIO_BASE_URL:http://localhost:1234}
+      endpoints:
+        embedding: /v1/embeddings
 
   selection:
     failure-threshold: 2
@@ -129,41 +141,44 @@ ai:
     message-chunk-size: 1
 
   chat:
-    default-model: qwen3-max
-    deep-thinking-model: qwen3-max
+    default-model: hy3-preview-free
+    deep-thinking-model: hy3-preview-free
     candidates:
-      - id: qwen-plus
-        provider: bailian
-        model: qwen-plus-latest
-        priority: 1
-      - id: qwen3-max
-        provider: bailian
-        model: qwen3-max
+      - id: hy3-preview-free
+        provider: openrouter
+        model: tencent/hy3-preview:free
         supports-thinking: true
-        priority: 3
+        priority: 0
       - id: glm-4.7
         provider: siliconflow
         model: Pro/zai-org/GLM-4.7
         supports-thinking: true
-        priority: 0
+        enabled: false
+        priority: 10
       - id: qwen3-local
         provider: ollama
         model: qwen3:8b-fp16
-        priority: 2
+        enabled: false
+        priority: 20
 
   embedding:
-    default-model: qwen-emb-8b
+    default-model: lmstudio-qwen3-emb-0.6b
     candidates:
+      - id: lmstudio-qwen3-emb-0.6b
+        provider: lmstudio
+        model: ${LMSTUDIO_EMBEDDING_MODEL:text-embedding-qwen3-embedding-0.6b@f16}
+        dimension: ${rag.default.dimension}
+        priority: 0
       - id: qwen-emb-8b
         provider: siliconflow
         model: Qwen/Qwen3-Embedding-8B
         dimension: ${rag.default.dimension}
-        priority: 1
+        priority: 10
       - id: qwen-emb-local
         provider: ollama
         model: qwen3-embedding:8b-fp16
         dimension: ${rag.default.dimension}
-        priority: 2
+        priority: 20
 
   rerank:
     default-model: qwen3-rerank
